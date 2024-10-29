@@ -4,7 +4,7 @@ ethblog is a principled blogging solution focused on information-dense self-cont
 
 ## Description
 
-ethsites is built with several principles/features:
+ethblog is built with several principles/features:
 
 1. **code minimal** -- there is a single javascript file driving the entire presentation layer. the on-chain content is driven by a single, short, readable solidity contract
 2. **modular** -- while L1 is currently used for data storage and markdown for parsing, both are modular in the on-chain specification. versioning and linked upgrade list provide an enshrined upgrade path over time as data storage requirements and standards change

@@ -29,7 +29,7 @@ To read an ethblog, you have several options. We will use the example blog deplo
 
 #### Using the portal
 
-We provide a Github Pages-based portal for ethblog. You can view our example blog with any browser that has a web3-enabled wallet at this link: [PLACEHOLDER]
+We provide a Github Pages-based portal for ethblog. You can view our example blog with any browser that has a web3-enabled wallet at this link: https://pdaian.github.io/ethblog/?blog=0x41Fa80b3D33a308fb46609C6c09608Ed7F4E05c0
 
 #### Using self-hosting
 

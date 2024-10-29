@@ -154,7 +154,7 @@ async function get_title(address) {
 // mmain loop: connect to wallet, get number of posts, get posts from chain, display posts
 async function run() {
     // display security warning
-    alert("ONLY LOAD ADRESSES YOU TRUST INTO THIS SITE. You are trusting an address to display arbitrary HTML in your browser. If you do not trust an address or do not understand this, do not input it and CLOSE THIS PAGE BEFORE HITTING OK BELOW!");
+    alert("ONLY LOAD ADRESSES YOU TRUST INTO THIS SITE. You are trusting an address to display arbitrary HTML in your browser. If you do not trust an address or do not understand this, do not input it and CLOSE THIS PAGE BEFORE HITTING OK BELOW!\n\nTHIS WEBSITE WILL NEVER ASK YOU TO SIGN A TRANSACTION NOR WILL ANY LEGITIMATE BLOG");
     // get requsted blog address and check if the query is even sane
     query_string = window.location.search;
     url_params = new URLSearchParams(query_string);

@@ -35,11 +35,13 @@ We provide a Github Pages-based portal for ethblog. You can view our example blo
 
 To self-host, copy the index.html and ethblog.js files to any HTTPS-enabled remote web server. You now have your own portal into any ethblog. Simply load index.html with the URL parameter `?blog=[eth address]` as a parameter to load that blog.
 
+#### Using web3:// (unformatted)
+
 You can retreive unformatted posts directly from the gateway using the web3:// URL standard addressing eth mainnet. 
 
 e.g. web3://0x41fa80b3d33a308fb46609c6c09608ed7f4e05c0/getPost/0, or through a centralized gateway, https://0x41fa80b3d33a308fb46609c6c09608ed7f4e05c0.w3eth.io/getPost/0
 
-#### Using etherscan
+#### Using etherscan (unformatted)
 
 One side effect of having blogs on chain is you can read them directly on etherscan, until the end of time.
 
@@ -67,7 +69,7 @@ Usual crypto best practices and caution do apply, but the code should be minimal
 You can audit the files in this repo with the following command:
 ```
 $ sha512sum ethblog.js index.html post.py example_post.txt contracts/*
-d4ea054f8ac72d4043dbe9ebf0e38824925a6c505ed9cc969a97433ac90766ad1f697a4a8c82cd9316b179c9c638bb5ad5163e4f1d741c580343116e5f03223c  ethblog.js
+6126e094e80aa4b8188353c9424c1a63c1e3b4166a62e38c3326a8f328dc37a8913edb128ade1365bd0c274a9ebdc7175083ecc7b5f3a8d280535159bb09d1dc  ethblog.js
 626026cf9736e08c08047bd3c408a3c51ea6136d62cd5b59933e22b4e392b29bf7b1c7c15c93916b06fe84c287d8f752bebaed90f4689c09fcf0760cd3174913  index.html
 038518fdfb3423055d61ad898d3e38338aee69e9990d4bbee6fddcabdce2d1e51b9ce1564cd36521295e6a863104329ec4a52f23495f90895e37d67069aab1ff  post.py
 a48217bd6a0865cbdecfbf3757273b39c0022907358d738ef4c593719a0c0a90b71ae75eba47718d57b11610dbe66830e7f702ac9e784ed5525a561ae548f953  example_post.txt

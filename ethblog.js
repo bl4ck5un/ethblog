@@ -165,7 +165,7 @@ async function run() {
         var address = await ethereum.enable();
     }
     else {
-        alert('Please install an Ethereum wallet!');
+        alert('Please install an Ethereum wallet! If you do have one, you may need to refresh for browser security policy reasons.');
         return;
     }
     if (!Array.isArray(address) || !is_address_valid(address)) {

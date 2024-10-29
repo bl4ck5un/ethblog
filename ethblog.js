@@ -137,7 +137,7 @@ async function get_num_blog_posts(address) {
 
 
 async function get_post_html(address, num_post) {
-    var post = await eth_call(address, "0x40731c24" + encode_int(0));
+    var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
     post = decode_string("0x" + post.slice(130));
     post = parsed_markdown(escape_html(post));
     return post.replaceAll("\n", "<br>");

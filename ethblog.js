@@ -55,7 +55,7 @@ hr {
 
 // some boilerpate for title subscript and footer
 ethblog_SUB = `<i class="subtext"> musings powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a> and stored respecting your freedoms, forever* with the iron-clad guarantees of L1 </i>`
-ethblog_FOOTER = `<i class="subtext"> to read about why ethblog is the most freedom-preserving way to publish, <a href="https://github.com/pdaian/ethblog/README.md">read our docs</a>.<br><br>*forever not actually guaranteed and certainly never promised`
+ethblog_FOOTER = `<i class="subtext"> to read about why ethblog is the most freedom-preserving way to publish, <a href="https://github.com/pdaian/ethblog/blob/main/README.md">read our docs</a>.<br><br>*forever not actually guaranteed and certainly never promised`
 
 
 // work function to call eth; only other function that touches wallet

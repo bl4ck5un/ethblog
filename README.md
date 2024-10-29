@@ -35,6 +35,10 @@ We provide a Github Pages-based portal for ethblog. You can view our example blo
 
 To self-host, copy the index.html and ethblog.js files to any HTTPS-enabled remote web server. You now have your own portal into any ethblog. Simply load index.html with the URL parameter `?blog=[eth address]` as a parameter to load that blog.
 
+You can retreive unformatted posts directly from the gateway using the web3:// URL standard addressing eth mainnet. 
+
+e.g. web3://0x41fa80b3d33a308fb46609c6c09608ed7f4e05c0/getPost/0, or through a centralized gateway, https://0x41fa80b3d33a308fb46609c6c09608ed7f4e05c0.w3eth.io/getPost/0
+
 #### Using etherscan
 
 One side effect of having blogs on chain is you can read them directly on etherscan, until the end of time.

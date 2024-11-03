@@ -1,7 +1,10 @@
 // ethblog javascript library -- designed to be HUMAN READABLE and use 0 JAVASCRIPT OR WEB3 LIBRARIES
 
+// this is the only config item; centralized fallback node to use, default w3eth.io
+CENTRALIZED_NODE = "w3eth.io";
 
 var body_html = "";
+var has_web3 = false;
 
  // philosophically channeling https://randyperkins2k.medium.com/writing-a-simple-markdown-parser-using-javascript-1f2e9449a558
 const parsed_markdown = (text) => {
@@ -77,6 +80,14 @@ async function eth_call(contract_address, hex_data) {
     }
 }
 
+// centralized fallback for the above
+async function http_call(address, slug, unpack_array) {
+    // for some reason when you specify a return you get a json array so we must handle that
+    var result = await fetch("https://" + address + "." + CENTRALIZED_NODE + "/" + slug);
+    if (unpack_array) return (await result.json())[0];
+    return await result.text();
+}
+
 // check address format, ignoring checksum (later queries will fail anyway)
 function is_address_valid(address) {
     if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -128,24 +139,30 @@ function decode_string(value) {
     return decodedString.replace(/\0/g, '');
 }
 
-
-
 // minimal contract interaction functions, hard-coded function selectors (check em yourself!)
 async function get_num_blog_posts(address) {
-    return decode_int(await eth_call(address, "0x51df1253"));
+    var result = has_web3 ? await eth_call(address, "0x51df1253") : await http_call(address, "getNumPosts?returns=(uint256)", true);
+    return decode_int(result);
 }
 
 
 async function get_post_html(address, num_post) {
-    var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
-    post = decode_string("0x" + post.slice(130));
+    if (has_web3) {
+        var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
+        post = decode_string("0x" + post.slice(130));
+    }
+    else
+        var post = await http_call(address, "getPost/" + num_post, false)
     post = parsed_markdown(escape_html(post));
     return post.replaceAll("\n", "<br>");
 }
 
 async function get_title(address) {
-    var title = await eth_call(address, "0x4a79d50c");
-    return decode_string("0x" + title.slice(130));
+    if (has_web3) {
+        var title = await eth_call(address, "0x4a79d50c");
+        return decode_string("0x" + title.slice(130));
+    }
+    return await http_call(address, "title", false);
 }
 
 
@@ -163,14 +180,11 @@ async function run() {
     // connect to injected ethereum, confirm existence or error
     if (typeof ethereum !== 'undefined') {
         var address = await ethereum.enable();
-    }
-    else {
-        alert('Please install an Ethereum wallet! If you do have one, you may need to refresh for browser security policy reasons.');
-        return;
-    }
-    if (!Array.isArray(address) || !is_address_valid(address)) {
-        alert('Ethereum wallet handshake failed! Make sure you are logged into your wallet');
-        return;
+        has_web3 = true;
+        if (!Array.isArray(address) || !is_address_valid(address)) {
+            alert('Ethereum wallet handshake failed! Make sure you are logged into your wallet');
+            has_web3 = false;
+        }
     }
 
     // build HTML with blog title

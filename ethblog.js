@@ -6,6 +6,7 @@ CHAIN_ID = 1; // switch this if you want to provide a frontend to a chain that i
 
 var body_html = "";
 var has_web3 = false;
+var has_errored = false; // set to true if any web3 calls fail for any reason
 
  // philosophically channeling https://randyperkins2k.medium.com/writing-a-simple-markdown-parser-using-javascript-1f2e9449a558
 const parsed_markdown = (text) => {
@@ -79,7 +80,8 @@ async function eth_call(contract_address, hex_data) {
         console.log('Result:', result);
         return result;
     } catch (error) {
-        alert('Error calling smart contract:', error);
+        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error; 
+        has_errored = true;
     }
 }
 
@@ -87,6 +89,11 @@ async function eth_call(contract_address, hex_data) {
 async function http_call(address, slug, unpack_array) {
     // for some reason when you specify a return you get a json array so we must handle that
     var result = await fetch("https://" + address + "." + CENTRALIZED_NODE + "/" + slug);
+    if (result.status != 200) {
+        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: HTTP request returned status " + result.status;
+        has_errored = true;
+        return;
+    }
     if (unpack_array) return (await result.json())[0];
     return await result.text();
 }
@@ -94,7 +101,6 @@ async function http_call(address, slug, unpack_array) {
 // check address format, ignoring checksum (later queries will fail anyway)
 function is_address_valid(address) {
     if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-        alert("You provided an invalid blog address! Reload this page with ?blog=[ethereum address] and try again");
         return false;
     }
     return true;
@@ -180,7 +186,7 @@ async function run() {
     url_params = new URLSearchParams(query_string);
     blog_address = url_params.get('blog');
     if (!is_address_valid(blog_address)) {
-        document.getRootNode().getRootNode().body.innerHTML = "To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>."; 
+        document.getRootNode().getRootNode().body.innerHTML = "Invalid blog address provided. To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>."; 
         return;
     }
     // connect to injected ethereum, confirm existence or error
@@ -193,6 +199,8 @@ async function run() {
             has_web3 = false;
         }
     }
+
+    if (has_errored) return;
 
     // build HTML with blog title
     var title = await get_title(blog_address);

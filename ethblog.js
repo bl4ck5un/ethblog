@@ -57,7 +57,7 @@ hr {
 </head>
 <body>
 `
-CENTRALIZED_WARNING_BANNER = `<div id="centralizedwarning" style="width: 90%; text-align: center; background:  #FF7955 ; margin: auto; padding: 10px;"> <b> You are currently viewing ethblog through a centralized proxy node.</b><br><br>To load this post from the blockchain, <a href="">install a web3-enabled wallet</a> and refresh the page. </div>`
+CENTRALIZED_WARNING_BANNER = `<div id="centralizedwarning" style="width: 90%; text-align: center; background:  #FF7955 ; margin: auto; padding: 10px;"> <b> You are currently viewing ethblog through a centralized proxy node.</b><br><br>To load this post from the blockchain, <a href="https://docs.alchemy.com/docs/how-to-install-a-web3-wallet">install a web3-enabled wallet</a> and refresh the page. </div>`
 
 // some boilerpate for title subscript and footer
 ethblog_SUB = `<i class="subtext"> musings powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a> and stored respecting your freedoms, forever* with the iron-clad guarantees of L1 </i>`

@@ -174,14 +174,18 @@ async function get_title(address) {
 // mmain loop: connect to wallet, get number of posts, get posts from chain, display posts
 async function run() {
     // display security warning
-    alert("ONLY LOAD ADRESSES YOU TRUST INTO THIS SITE. You are trusting an address to display arbitrary HTML in your browser. If you do not trust an address or do not understand this, do not input it and CLOSE THIS PAGE BEFORE HITTING OK BELOW!\n\nTHIS WEBSITE WILL NEVER ASK YOU TO SIGN A TRANSACTION NOR WILL ANY LEGITIMATE BLOG");
     // get requsted blog address and check if the query is even sane
+    document.getRootNode().getRootNode().body.innerHTML = "[ loading blockchain data ] ........."; // clear no javascript message
     query_string = window.location.search;
     url_params = new URLSearchParams(query_string);
     blog_address = url_params.get('blog');
-    if (!is_address_valid(blog_address)) return;
+    if (!is_address_valid(blog_address)) {
+        document.getRootNode().getRootNode().body.innerHTML = "To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>."; 
+        return;
+    }
     // connect to injected ethereum, confirm existence or error
     if (typeof ethereum !== 'undefined') {
+        alert("We have detected a web3 wallet. You may be asked to unlock it to read this blog from the chain, this is normal.\n\nTHIS BLOG WILL NEVER ASK YOU TO SIGN ANY TRANSACTIONS.\n\nYou should never sign any transactions from an unknown source.");
         var address = await ethereum.enable();
         has_web3 = true;
         if (!Array.isArray(address) || !is_address_valid(address)) {
@@ -211,8 +215,3 @@ async function run() {
     // swap doc HTML to appropriate HTML, display page
     document.getRootNode().getRootNode().body.innerHTML = html;
 }
-
-// do the ~~work~~
-// we love our entry points at ethblog
-run();
-

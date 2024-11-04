@@ -56,6 +56,7 @@ hr {
 </head>
 <body>
 `
+CENTRALIZED_WARNING_BANNER = `<div id="centralizedwarning" style="width: 90%; text-align: center; background:  #FF7955 ; margin: auto; padding: 10px;"> <b> You are currently viewing ethblog through a centralized proxy node.</b><br><br>To load this post from the blockchain, <a href="">install a web3-enabled wallet</a> and refresh the page. </div>`
 
 // some boilerpate for title subscript and footer
 ethblog_SUB = `<i class="subtext"> musings powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a> and stored respecting your freedoms, forever* with the iron-clad guarantees of L1 </i>`
@@ -193,7 +194,7 @@ async function run() {
     var title = await get_title(blog_address);
     title = escape_html(title);
     document.title = "ethblog ~ " + title
-    html = CSS_HEADER + "<br><div class='bigger'><h1>" + title + "</h1> " + ethblog_SUB + "</div><br><br>";
+    html = CSS_HEADER + (has_web3 ? "" : CENTRALIZED_WARNING_BANNER) +  "<br><div class='bigger'><h1>" + title + "</h1> " + ethblog_SUB + "</div><br><br>";
 
     // fetch total number of posts for contract
     num_blog_posts = await get_num_blog_posts(blog_address);

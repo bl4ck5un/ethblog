@@ -219,7 +219,7 @@ async function run() {
     if (post_anchor !== null) html += "<div style='text-align: center;'><a href='index.html?blog=" + blog_address + "'><i>back to home // view all posts</i></a></div>";
 
     // fetch total number of posts for contract
-    blog_posts = (post_anchor == null) ? [...Array(await get_num_blog_posts(blog_address)).keys()] : [post_anchor];
+    blog_posts = (post_anchor == null) ? [...Array(await get_num_blog_posts(blog_address)).keys()].reverse() : [post_anchor];
 
     // loop through all posts, get post data from chain, parse and append it to the output html
     for (i = 0; i < blog_posts.length; i++) {

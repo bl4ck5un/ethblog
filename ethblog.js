@@ -33,6 +33,9 @@ html *
 h1 {
     text-align: center;
 }
+h2 {
+    margin-bottom: 0px;
+}
 hr {
     border-top: 1px dotted gray;
     width: 70%;

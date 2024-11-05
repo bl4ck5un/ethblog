@@ -163,7 +163,7 @@ async function get_post_html(address, num_post) {
     else
         var post = await http_call(address, "getPost/" + num_post, false)
     post = parsed_markdown(escape_html(post));
-    return post.replaceAll("\n", "<br>");
+    return post.replaceAll("\n\n", "<br>").replaceAll("\n", "<br>");
 }
 
 async function get_title(address) {

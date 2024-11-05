@@ -80,7 +80,7 @@ async function eth_call(contract_address, hex_data) {
         console.log('Result:', result);
         return result;
     } catch (error) {
-        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error; 
+        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error; 
         has_errored = true;
     }
 }
@@ -90,7 +90,7 @@ async function http_call(address, slug, unpack_array) {
     // for some reason when you specify a return you get a json array so we must handle that
     var result = await fetch("https://" + address + "." + CENTRALIZED_NODE + "/" + slug);
     if (result.status != 200) {
-        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: HTTP request returned status " + result.status;
+        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: HTTP request returned status " + result.status;
         has_errored = true;
         return;
     }
@@ -174,7 +174,12 @@ async function get_title(address) {
     return await http_call(address, "title", false);
 }
 
+function getAnchor() {
+    var currentUrl = document.URL,
+	urlParts   = currentUrl.split('#');
 
+    return (urlParts.length > 1) ? urlParts[1] : null;
+}
 
 
 // mmain loop: connect to wallet, get number of posts, get posts from chain, display posts
@@ -202,21 +207,26 @@ async function run() {
 
     if (has_errored) return;
 
+    var post_anchor = getAnchor();
+
     // build HTML with blog title
-    var title = await get_title(blog_address);
+    var title = (await get_title(blog_address))
     title = escape_html(title);
-    document.title = "ethblog ~ " + title
-    html = CSS_HEADER + (has_web3 ? "" : CENTRALIZED_WARNING_BANNER) +  "<br><div class='bigger'><h1>" + title + "</h1> " + ethblog_SUB + "</div><br><br>";
+    post_slug = post_anchor == null ? "" : (" -- Post #" + post_anchor);
+    document.title = "ethblog ~ " + title + post_slug
+    html = CSS_HEADER + (has_web3 ? "" : CENTRALIZED_WARNING_BANNER) +  "<br><div class='bigger'><h1>" + title + "</h1>" + ethblog_SUB + "</div><br><br>";
+
+    if (post_anchor !== null) html += "<div style='text-align: center;'><a href='index.html?blog=" + blog_address + "'><i>back to home // view all posts</i></a></div>";
 
     // fetch total number of posts for contract
-    num_blog_posts = await get_num_blog_posts(blog_address);
+    blog_posts = (post_anchor == null) ? [...Array(await get_num_blog_posts(blog_address)).keys()] : [post_anchor];
 
     // loop through all posts, get post data from chain, parse and append it to the output html
-    for (i = 0; i < num_blog_posts; i++) {
-        html += "<div class='post'>" + await get_post_html(blog_address, i) + "</div>";
-        html += "<br><br><hr><br>";
+    for (i = 0; i < blog_posts.length; i++) {
+        html += "<div class='post'>" + await get_post_html(blog_address, blog_posts[i]) + "</div>";
+        html += "<br><div style='text-align: center;'><i>[<a href='#" + blog_posts[i] + "' onclick='window.location.assign(\"index.html?blog=" + blog_address + "#" + blog_posts[i] + "\"); window.location.reload(); return false;'>permalink</a>]</i></div><br><br><hr><br>";
     }
-    if (num_blog_posts == 0) html += "<h2 style='text-align:center;'>no posts found :'( try posting something?</h2><br><br>"
+    if (blog_posts.length == 0) html += "<h2 style='text-align:center;'>no posts found :'( try posting something?</h2><br><br>"
     // add footer to output HTML
     html += "<div class='bigger'>" + ethblog_FOOTER + "</div>";
     body_html = html;

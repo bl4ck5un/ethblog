@@ -2,7 +2,7 @@
 
 // this is the only config item; centralized fallback node to use, default w3eth.io
 CENTRALIZED_NODE = "w3eth.io";
-CHAIN_ID = 1; // switch this if you want to provide a frontend to a chain that isn't eth mainnet
+CHAIN_ID = "0x1"; // switch this if you want to provide a frontend to a chain that isn't eth mainnet
 
 var body_html = "";
 var has_web3 = false;

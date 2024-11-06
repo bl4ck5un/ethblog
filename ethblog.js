@@ -84,6 +84,7 @@ async function eth_call(contract_address, hex_data) {
         return result;
     } catch (error) {
         document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error; 
+        console.log(error);
         has_errored = true;
     }
 }

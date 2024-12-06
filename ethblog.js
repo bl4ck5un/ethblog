@@ -162,6 +162,7 @@ async function get_num_blog_posts(address) {
 async function get_post_html(address, num_post) {
     if (has_web3) {
         var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
+        if (post.length < 131) return ""; // empty post
         post = decode_string("0x" + post.slice(130));
     }
     else
@@ -227,7 +228,9 @@ async function run() {
 
     // loop through all posts, get post data from chain, parse and append it to the output html
     for (i = 0; i < blog_posts.length; i++) {
-        html += "<div class='post'>" + await get_post_html(blog_address, blog_posts[i]) + "</div>";
+        post_text = await get_post_html(blog_address, blog_posts[i]);
+        if (post_text === "") continue; // deleted/empty post
+        html += "<div class='post'>" + post_text + "</div>";
         html += "<br><div style='text-align: center;'><i>[<a href='#" + blog_posts[i] + "' onclick='window.location.assign(\"index.html?blog=" + blog_address + "#" + blog_posts[i] + "\"); window.location.reload(); return false;'>permalink</a>]</i></div><br><br><hr><br>";
     }
     if (blog_posts.length == 0) html += "<h2 style='text-align:center;'>no posts found :'( try posting something?</h2><br><br>"

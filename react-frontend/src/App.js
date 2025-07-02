@@ -40,9 +40,6 @@ function App() {
 
       {/* Main Container */}
       <div className="container">
-        <div>
-          <p><i class="subtext">This blog lives at <a href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC">0x410D91696Ee45da4BDdfaed06278038c7C1A84bC</a> on Ethereum, powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a>.</i></p>
-        </div>
         {ready ? (
           <>
             {!window.has_web3 && (
@@ -60,6 +57,7 @@ function App() {
           <p className="mb-0">
             © {new Date().getFullYear()} ethblog — Built with ❤️ on Ethereum
           </p>
+          <i class="subtext">This blog lives at <a href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC">0x410D91696Ee45da4BDdfaed06278038c7C1A84bC</a> on Ethereum, powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a>.</i>
         </div>
       </footer>
     </>

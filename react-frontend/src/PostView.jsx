@@ -16,9 +16,15 @@ function PostView({ index }) {
 
     return (
         <div>
-            <a href="/">← Back</a>
-            <h1>Blog {index}</h1>
-            <p dangerouslySetInnerHTML={{ __html: post }} />
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Posts</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Blog {index}</li>
+                </ol>
+            </nav>
+            <div class="mt-2">
+                <p dangerouslySetInnerHTML={{ __html: post }} />
+            </div>
         </div>
     );
 }

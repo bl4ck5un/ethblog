@@ -4,9 +4,33 @@ import * as UZIP from 'uzip';
 const CENTRALIZED_NODE = "w3eth.io";
 const CHAIN_ID = "0x1"; // switch this if you want to provide a frontend to a chain that isn't eth mainnet
 
-var body_html = "";
-var has_web3 = false;
-var has_errored = false; // set to true if any web3 calls fail for any reason
+let blog_address = '0x410D91696Ee45da4BDdfaed06278038c7C1A84bC';
+if (!is_address_valid(blog_address)) {
+    throw new Error("Invalid blog address provided");
+}
+
+export async function setup_web3() {
+    if (window.has_web3) {
+        console.log("web3 ready");
+        return; // return right away if already
+    }
+
+    if (typeof window.ethereum !== 'undefined') {
+        // alert("We have detected a web3 wallet. You may be asked to unlock it to read this blog from the chain.\n\nTHIS BLOG WILL NEVER ASK YOU TO SIGN ANY TRANSACTIONS.");
+        try {
+            const address = await window.ethereum.enable();
+            if (Array.isArray(address) && is_address_valid(address[0])) {
+                window.has_web3 = true;
+                console.log("window.has_web3 set");
+            } else {
+                throw new Error("Invalid wallet address");
+            }
+        } catch (err) {
+            alert("Ethereum wallet handshake failed!");
+            window.has_web3 = false;
+        }
+    }
+}
 
 // philosophically channeling https://randyperkins2k.medium.com/writing-a-simple-markdown-parser-using-javascript-1f2e9449a558
 const parsed_markdown = (text) => {
@@ -20,11 +44,7 @@ const parsed_markdown = (text) => {
 }
 
 
-// boilerplate for the CSS/html header, all for prettifying
-const CENTRALIZED_WARNING_BANNER = `<div id="centralizedwarning" style="width: 90%; text-align: center; background:  #FF7955 ; margin: auto; padding: 10px;"> <b> You are currently viewing ethblog through a centralized proxy node.</b><br><br>To load this post from the blockchain, <a href="https://docs.alchemy.com/docs/how-to-install-a-web3-wallet">install a web3-enabled wallet</a> and refresh the page. </div>`
-
 // some boilerpate for title subscript and footer
-const ethblog_SUB = `<i class="subtext"> This blog lives at <a href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC">0x410D91696Ee45da4BDdfaed06278038c7C1A84bC</a> on Ethereum, powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a> and stored respecting your freedoms, forever* with the iron-clad guarantees of L1</i>`
 const ethblog_FOOTER = `<i class="subtext">(c) Fan Zhang & authors of their posts<br><br>*forever not actually guaranteed and certainly never promised`
 
 
@@ -36,28 +56,19 @@ async function eth_call(contract_address, hex_data) {
         chainId: CHAIN_ID
     };
 
-    try {
-        const result = await window.ethereum.request({
-            method: 'eth_call',
-            params: [callData, 'latest'],
-        });
-        console.log('Result:', result);
-        return result;
-    } catch (error) {
-        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error;
-        console.log(error);
-        has_errored = true;
-    }
+    return await window.ethereum.request({
+        method: 'eth_call',
+        params: [callData, 'latest'],
+    });
 }
 
 // centralized fallback for the above
 async function http_call(address, slug, unpack_array) {
+    console.error("using http");
     // for some reason when you specify a return you get a json array so we must handle that
     var result = await fetch("https://" + address + "." + CENTRALIZED_NODE + "/" + slug);
     if (result.status != 200) {
-        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: HTTP request returned status " + result.status;
-        has_errored = true;
-        return;
+        throw new Error("There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: HTTP request returned status " + result.status);
     }
     if (unpack_array) return (await result.json())[0];
     return await result.text();
@@ -116,7 +127,8 @@ function decode_string(value) {
 
 // minimal contract interaction functions, hard-coded function selectors (check em yourself!)
 async function get_num_blog_posts(address) {
-    var result = has_web3 ? await eth_call(address, "0x51df1253") : await http_call(address, "getNumPosts?returns=(uint256)", true);
+    console.log("===", window.has_web3);
+    var result = window.has_web3 ? await eth_call(address, "0x51df1253") : await http_call(address, "getNumPosts?returns=(uint256)", true);
     return decode_int(result);
 }
 
@@ -172,7 +184,7 @@ async function decompressZLBInline(escapedInput) {
 
 
 async function get_post_html(address, num_post) {
-    if (has_web3) {
+    if (window.has_web3) {
         var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
         if (post.length < 131) return ""; // empty post
         post = decode_string("0x" + post.slice(130));
@@ -194,7 +206,7 @@ async function get_post_html(address, num_post) {
 }
 
 async function get_title(address) {
-    if (has_web3) {
+    if (window.has_web3) {
         var title = await eth_call(address, "0x4a79d50c");
         return decode_string("0x" + title.slice(130));
     }
@@ -202,49 +214,10 @@ async function get_title(address) {
 }
 
 export async function getOnePost(postid) {
-    var blog_address = '0x410D91696Ee45da4BDdfaed06278038c7C1A84bC';
-    if (!is_address_valid(blog_address)) {
-        throw new Error("Invalid blog address provided");
-    }
-    // connect to injected ethereum, confirm existence or error
-    if (typeof window.ethereum !== 'undefined') {
-        alert("We have detected a web3 wallet. You may be asked to unlock it to read this blog from the chain, this is normal.\n\nTHIS BLOG WILL NEVER ASK YOU TO SIGN ANY TRANSACTIONS.\n\nYou should never sign any transactions from an unknown source.");
-        var address = await window.ethereum.enable();
-        has_web3 = true;
-        if (!Array.isArray(address) || !is_address_valid(address)) {
-            alert('Ethereum wallet handshake failed! Make sure you are logged into your wallet');
-            has_web3 = false;
-        }
-    }
-
-    if (has_errored) {
-        throw new Error("Web3 error");
-    };
-
-    var post_text = await get_post_html(blog_address, postid);
-    return post_text;
+    return await get_post_html(blog_address, postid);
 }
 
 export async function getPosts() {
-    var blog_address = '0x410D91696Ee45da4BDdfaed06278038c7C1A84bC';
-    if (!is_address_valid(blog_address)) {
-        throw new Error("Invalid blog address provided");
-    }
-    // connect to injected ethereum, confirm existence or error
-    if (typeof window.ethereum !== 'undefined') {
-        alert("We have detected a web3 wallet. You may be asked to unlock it to read this blog from the chain, this is normal.\n\nTHIS BLOG WILL NEVER ASK YOU TO SIGN ANY TRANSACTIONS.\n\nYou should never sign any transactions from an unknown source.");
-        var address = await window.ethereum.enable();
-        has_web3 = true;
-        if (!Array.isArray(address) || !is_address_valid(address)) {
-            alert('Ethereum wallet handshake failed! Make sure you are logged into your wallet');
-            has_web3 = false;
-        }
-    }
-
-    if (has_errored) {
-        throw new Error("Web3 error");
-    };
-
     // fetch total number of posts for contract
     var blog_posts = [...Array(await get_num_blog_posts(blog_address)).keys()].reverse();
 

@@ -8,15 +8,15 @@ var body_html = "";
 var has_web3 = false;
 var has_errored = false; // set to true if any web3 calls fail for any reason
 
- // philosophically channeling https://randyperkins2k.medium.com/writing-a-simple-markdown-parser-using-javascript-1f2e9449a558
+// philosophically channeling https://randyperkins2k.medium.com/writing-a-simple-markdown-parser-using-javascript-1f2e9449a558
 const parsed_markdown = (text) => {
-	const toHTML = text
-		.replace(/^### (.*$)/gim, '<h3>$1</h3>') // h3 tag
-		.replace(/^## (.*$)/gim, '<h2>$1</h2>') // h2 tag
-		.replace(/^# (.*$)/gim, '<h1>$1</h1>') // h1 tag
-		.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>') // bold text
-		.replace(/\*(.*)\*/gim, '<i>$1</i>') // italic text
-	return toHTML.trim(); // using trim method to remove whitespace
+    const toHTML = text
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>') // h3 tag
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>') // h2 tag
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>') // h1 tag
+        .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>') // bold text
+        .replace(/\*(.*)\*/gim, '<i>$1</i>') // italic text
+    return toHTML.trim(); // using trim method to remove whitespace
 }
 
 
@@ -63,8 +63,8 @@ hr {
 CENTRALIZED_WARNING_BANNER = `<div id="centralizedwarning" style="width: 90%; text-align: center; background:  #FF7955 ; margin: auto; padding: 10px;"> <b> You are currently viewing ethblog through a centralized proxy node.</b><br><br>To load this post from the blockchain, <a href="https://docs.alchemy.com/docs/how-to-install-a-web3-wallet">install a web3-enabled wallet</a> and refresh the page. </div>`
 
 // some boilerpate for title subscript and footer
-ethblog_SUB = `<i class="subtext"> musings powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a> and stored respecting your freedoms, forever* with the iron-clad guarantees of L1 </i>`
-ethblog_FOOTER = `<i class="subtext"> to read about why ethblog is the most freedom-preserving way to publish, <a href="https://github.com/pdaian/ethblog/blob/main/README.md">read our docs</a>.<br><br>*forever not actually guaranteed and certainly never promised`
+ethblog_SUB = `<i class="subtext"> This blog lives at <a href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC">0x410D91696Ee45da4BDdfaed06278038c7C1A84bC</a> on Ethereum, powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a> and stored respecting your freedoms, forever* with the iron-clad guarantees of L1</i>`
+ethblog_FOOTER = `<i class="subtext">(c) Fan Zhang & authors of their posts<br><br>*forever not actually guaranteed and certainly never promised`
 
 
 // work function to call eth; only other function that touches wallet
@@ -83,7 +83,7 @@ async function eth_call(contract_address, hex_data) {
         console.log('Result:', result);
         return result;
     } catch (error) {
-        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error; 
+        document.getRootNode().getRootNode().body.innerHTML = "<b>There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: " + error;
         console.log(error);
         has_errored = true;
     }
@@ -111,14 +111,13 @@ function is_address_valid(address) {
 }
 
 // don't allow users to input their own HTML
-function escape_html(unsafe)
-{
+function escape_html(unsafe) {
     return unsafe
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
@@ -159,6 +158,56 @@ async function get_num_blog_posts(address) {
 }
 
 
+// added by bl4ck5un -- decompress zip-base64-sha256
+async function decompressZLBInline(escapedInput) {
+    // Unescape the raw string
+    let raw = escapedInput.trim();
+    if (raw.startsWith('"') && raw.endsWith('"')) {
+        raw = raw.slice(1, -1);
+    }
+    raw = raw.replace(/\\\\/g, "\\")
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, '"');
+
+    // Parse header and body
+    const lines = raw.split("\n");
+    if (lines[0] !== "---") throw new Error("Invalid zlb: missing opening ---");
+    const secondIdx = lines.indexOf("---", 1);
+    if (secondIdx === -1) throw new Error("Invalid zlb: missing second ---");
+
+    const headerLines = lines.slice(1, secondIdx);
+    const b64 = lines.slice(secondIdx + 1).join("");
+    const headers = Object.fromEntries(
+        headerLines.map(line => line.split(": ").map(s => s.trim()))
+    );
+
+    if (headers.version !== "0" || headers.algorithm !== "zip-base64-sha256") {
+        throw new Error("Unsupported version or algorithm");
+    }
+
+    // Decode ZIP
+    const bin = atob(b64);
+    const zipBytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const files = UZIP.parse(zipBytes);
+
+    const file = files["content.md"];
+    if (!file) throw new Error("Missing content.md in archive");
+
+    const content = new TextDecoder().decode(file);
+
+    // SHA-256 verification
+    const digest = await crypto.subtle.digest("SHA-256", file);
+    const actualSha = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+    return {
+        content,
+        expected: headers.sha256,
+        actual: actualSha,
+        shaMismatch: headers.sha256 !== actualSha
+    };
+}
+
+
 async function get_post_html(address, num_post) {
     if (has_web3) {
         var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
@@ -167,6 +216,16 @@ async function get_post_html(address, num_post) {
     }
     else
         var post = await http_call(address, "getPost/" + num_post, false)
+
+    try {
+        const result = await decompressZLBInline(post);
+        post = result.shaMismatch
+            ? `⚠️ SHA-256 mismatch!\nExpected: ${result.expected}\nActual:   ${result.actual}\n\n${result.content}`
+            : result.content;
+    } catch (err) {
+        alert("❌ " + err.message);
+    }
+
     post = parsed_markdown(escape_html(post));
     return post.replaceAll("\n", "<br>");
 }
@@ -181,7 +240,7 @@ async function get_title(address) {
 
 function getAnchor() {
     var currentUrl = document.URL,
-	urlParts   = currentUrl.split('#');
+        urlParts = currentUrl.split('#');
 
     return (urlParts.length > 1) ? urlParts[1] : null;
 }
@@ -194,9 +253,9 @@ async function run() {
     document.getRootNode().getRootNode().body.innerHTML = "[ loading blockchain data ] ........."; // clear no javascript message
     query_string = window.location.search;
     url_params = new URLSearchParams(query_string);
-    blog_address = url_params.get('blog');
+    blog_address = url_params.get('blog') || '0x410D91696Ee45da4BDdfaed06278038c7C1A84bC';
     if (!is_address_valid(blog_address)) {
-        document.getRootNode().getRootNode().body.innerHTML = "Invalid blog address provided. To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>."; 
+        document.getRootNode().getRootNode().body.innerHTML = "Invalid blog address provided. To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.";
         return;
     }
     // connect to injected ethereum, confirm existence or error
@@ -219,7 +278,7 @@ async function run() {
     title = escape_html(title);
     post_slug = post_anchor == null ? "" : (" -- Post #" + post_anchor);
     document.title = "ethblog ~ " + title + post_slug
-    html = CSS_HEADER + (has_web3 ? "" : CENTRALIZED_WARNING_BANNER) +  "<br><div class='bigger'><h1>" + title + "</h1>" + ethblog_SUB + "</div><br><br>";
+    html = CSS_HEADER + (has_web3 ? "" : CENTRALIZED_WARNING_BANNER) + "<br><div class='bigger'><h1>" + title + "</h1>" + ethblog_SUB + "</div><br><br>";
 
     if (post_anchor !== null) html += "<div style='text-align: center;'><a href='index.html?blog=" + blog_address + "'><i>back to home // view all posts</i></a></div>";
 

@@ -5,7 +5,6 @@ pragma solidity ^0.8.26;
 contract Blog {
     address public owner;
     string[] posts;
-    string public parser = "onchainmd0"; // allow future data storage locations, eg blobs/l2, with modular js parsers
     address public upgradedTo;           // linked list of blog contracts if later upgrade desired
     string public title;                 // blog title (CANNOT BE CHANGED ONCE SET)
 

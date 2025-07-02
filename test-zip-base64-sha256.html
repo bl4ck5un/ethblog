@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ZLB Inline Decompressor</title>
+    <script src="https://cdn.jsdelivr.net/gh/photopea/UZIP.js/UZIP.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 1em;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            font-family: monospace;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 1em;
+            white-space: pre-wrap;
+        }
+
+        button {
+            margin-top: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Paste your .inline.txt string (escaped)</h2>
+    <textarea id="zlbInput" placeholder='e.g. "---\\nversion: 0\\nalgorithm: zip-base64-sha256\\n..."'></textarea>
+    <br>
+    <button onclick="handleDecompress()">Decompress</button>
+
+    <h3>Output:</h3>
+    <pre id="output"></pre>
+
+    <script>
+        function parseZLB(zlb) {
+            const lines = zlb.split("\n");
+            if (lines[0] !== "---") throw new Error("Invalid zlb: missing opening ---");
+            const secondIdx = lines.indexOf("---", 1);
+            if (secondIdx === -1) throw new Error("Invalid zlb: missing second ---");
+
+            const headerLines = lines.slice(1, secondIdx);
+            const b64 = lines.slice(secondIdx + 1).join("");
+            const headers = Object.fromEntries(
+                headerLines.map(line => line.split(": ").map(s => s.trim()))
+            );
+
+            if (headers.version !== "0" || headers.algorithm !== "zip-base64-sha256") {
+                throw new Error("Unsupported version or algorithm");
+            }
+
+            return { headers, b64 };
+        }
+
+        function base64ToUint8Array(b64) {
+            const bin = atob(b64);
+            return Uint8Array.from(bin, c => c.charCodeAt(0));
+        }
+
+        async function handleDecompress() {
+            const output = document.getElementById("output");
+            output.textContent = "";
+
+            try {
+                // Get raw escaped string, remove quotes if present
+                let raw = document.getElementById("zlbInput").value.trim();
+                if (raw.startsWith('"') && raw.endsWith('"')) {
+                    raw = raw.slice(1, -1);
+                }
+
+                // Unescape manually
+                raw = raw.replace(/\\\\/g, "\\")
+                    .replace(/\\n/g, "\n")
+                    .replace(/\\"/g, '"');
+
+                const { headers, b64 } = parseZLB(raw);
+                const zipBytes = base64ToUint8Array(b64);
+                const files = UZIP.parse(zipBytes);
+
+                const file = files["content.md"];
+                if (!file) throw new Error("Missing content.md in archive");
+
+                const content = new TextDecoder().decode(file);
+
+                // SHA-256 verification
+                const digest = await crypto.subtle.digest("SHA-256", file);
+                const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+
+                if (hex !== headers.sha256) {
+                    output.textContent = "⚠️ SHA-256 mismatch!\nExpected: " + headers.sha256 + "\nActual:   " + hex + "\n\n" + content;
+                } else {
+                    output.textContent = content;
+                }
+            } catch (err) {
+                output.textContent = "❌ " + err.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

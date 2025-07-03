@@ -22,8 +22,8 @@ function PostView({ index }) {
                     <li className="breadcrumb-item active" aria-current="page">Blog {index}</li>
                 </ol>
             </nav>
-            <div className="">
-                <div className='text-center'>
+            <div className="mt-5">
+                <div className='text-center p-2'>
                     <h1 className="mb-3">📝 {post.title || `Post #${index}`}</h1>
 
                     {(post.author || post.date) && (

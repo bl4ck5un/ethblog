@@ -1,4 +1,6 @@
 import * as UZIP from 'uzip';
+import { marked } from 'marked';
+import frontMatter from 'front-matter';
 
 // this is the only config item; centralized fallback node to use, default w3eth.io
 const CENTRALIZED_NODE = "w3eth.io";
@@ -32,22 +34,6 @@ export async function setup_web3() {
     }
 }
 
-// philosophically channeling https://randyperkins2k.medium.com/writing-a-simple-markdown-parser-using-javascript-1f2e9449a558
-const parsed_markdown = (text) => {
-    const toHTML = text
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>') // h3 tag
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>') // h2 tag
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>') // h1 tag
-        .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>') // bold text
-        .replace(/\*(.*)\*/gim, '<i>$1</i>') // italic text
-    return toHTML.trim(); // using trim method to remove whitespace
-}
-
-
-// some boilerpate for title subscript and footer
-const ethblog_FOOTER = `<i class="subtext">(c) Fan Zhang & authors of their posts<br><br>*forever not actually guaranteed and certainly never promised`
-
-
 // work function to call eth; only other function that touches wallet
 async function eth_call(contract_address, hex_data) {
     const callData = {
@@ -67,7 +53,7 @@ async function http_call(address, slug, unpack_array) {
     console.error("using http");
     // for some reason when you specify a return you get a json array so we must handle that
     var result = await fetch("https://" + address + "." + CENTRALIZED_NODE + "/" + slug);
-    if (result.status != 200) {
+    if (result.status !== 200) {
         throw new Error("There was an error calling the contract; make sure your node is up and the contract is a valid EthBlog contract, and that the post you are trying to access exists.</b><br><br>To see examples of how to load an ethblog, <a href='//github.com/pdaian/ethblog/blob/main/README.md'>read our docs</a>.<br><br>Error message: HTTP request returned status " + result.status);
     }
     if (unpack_array) return (await result.json())[0];
@@ -81,17 +67,6 @@ function is_address_valid(address) {
     }
     return true;
 }
-
-// don't allow users to input their own HTML
-function escape_html(unsafe) {
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
 
 // 3 minimal abi functions, easy 2 audit
 function encode_int(value) {
@@ -127,7 +102,6 @@ function decode_string(value) {
 
 // minimal contract interaction functions, hard-coded function selectors (check em yourself!)
 async function get_num_blog_posts(address) {
-    console.log("===", window.has_web3);
     var result = window.has_web3 ? await eth_call(address, "0x51df1253") : await http_call(address, "getNumPosts?returns=(uint256)", true);
     return decode_int(result);
 }
@@ -184,13 +158,14 @@ async function decompressZLBInline(escapedInput) {
 
 
 async function get_post_html(address, num_post) {
+    let post;
     if (window.has_web3) {
-        var post = await eth_call(address, "0x40731c24" + encode_int(num_post));
+        post = await eth_call(address, "0x40731c24" + encode_int(num_post));
         if (post.length < 131) return ""; // empty post
         post = decode_string("0x" + post.slice(130));
     }
     else
-        var post = await http_call(address, "getPost/" + num_post, false)
+        post = await http_call(address, "getPost/" + num_post, false)
 
     try {
         const result = await decompressZLBInline(post);
@@ -201,16 +176,17 @@ async function get_post_html(address, num_post) {
         alert("❌ " + err.message);
     }
 
-    post = parsed_markdown(escape_html(post));
-    return post.replaceAll("\n", "<br>");
-}
+    let parsed = frontMatter(post);
+    console.log("=======", parsed.attributes.date);
 
-async function get_title(address) {
-    if (window.has_web3) {
-        var title = await eth_call(address, "0x4a79d50c");
-        return decode_string("0x" + title.slice(130));
+    post = marked.parse(parsed.body);
+
+    return {
+        "title": parsed.attributes.title,
+        "author": parsed.attributes.author,
+        "date": parsed.attributes.date,
+        "content": marked.parse(parsed.body),
     }
-    return await http_call(address, "title", false);
 }
 
 export async function getOnePost(postid) {
@@ -225,12 +201,15 @@ export async function getPosts() {
 
     // loop through all posts, get post data from chain, parse and append it to the output html
     for (var i = 0; i < blog_posts.length; i++) {
-        var post_text = await get_post_html(blog_address, blog_posts[i]);
-        if (post_text === "") continue; // deleted/empty post
+        var post = await get_post_html(blog_address, blog_posts[i]);
+        if (post["content"] === "") continue; // deleted/empty post
+        console.log(post);
         posts.push({
             "id": blog_posts[i],
-            "title": "no title yet",
-            "content": post_text,
+            "title": post["title"],
+            "content": post["content"],
+            "author": post["author"],
+            "date": post["date"]
         })
     }
 

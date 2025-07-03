@@ -1,6 +1,20 @@
 import * as UZIP from 'uzip';
 import { marked } from 'marked';
-import frontMatter from 'front-matter';
+import { parse } from 'yaml';
+
+
+function parseFrontmatter(raw) {
+    const match = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(raw);
+    if (!match) {
+        let content = raw;
+        return { undefined, content };
+    }
+
+    const [, yamlText, content] = match;
+    let frontmatter = parse(yamlText);
+    return { frontmatter, content };
+}
+
 
 // this is the only config item; centralized fallback node to use, default w3eth.io
 const CENTRALIZED_NODE = "w3eth.io";
@@ -176,17 +190,24 @@ async function get_post_html(address, num_post) {
         alert("❌ " + err.message);
     }
 
-    let parsed = frontMatter(post);
-    console.log("=======", parsed.attributes.date);
-
-    post = marked.parse(parsed.body);
-
-    return {
-        "title": parsed.attributes.title,
-        "author": parsed.attributes.author,
-        "date": parsed.attributes.date,
-        "content": marked.parse(parsed.body),
+    let { frontmatter, content } = parseFrontmatter(post);
+    if (!frontmatter) {
+        return {
+            "title": "",
+            "author": "",
+            "date": "",
+            "content": marked.parse(content),
+        }
+    } else {
+        return {
+            "title": frontmatter.title,
+            "author": frontmatter.author,
+            "date": frontmatter.date,
+            "content": marked.parse(content),
+        }
     }
+
+
 }
 
 export async function getOnePost(postid) {
@@ -203,7 +224,6 @@ export async function getPosts() {
     for (var i = 0; i < blog_posts.length; i++) {
         var post = await get_post_html(blog_address, blog_posts[i]);
         if (post["content"] === "") continue; // deleted/empty post
-        console.log(post);
         posts.push({
             "id": blog_posts[i],
             "title": post["title"],

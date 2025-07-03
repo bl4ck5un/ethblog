@@ -9,19 +9,19 @@
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.3.7",
     "bootstrap-icons": "^1.13.1",
-    "front-matter": "^4.0.2",
     "marked": "^16.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.3",
     "react-scripts": "5.0.1",
     "uzip": "^0.20201231.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yaml": "^2.8.0"
   },
   "scripts": {
-  "start": "react-app-rewired start",
-  "build": "react-app-rewired build",
-  "test": "react-app-rewired test"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
   },
   "eslintConfig": {
     "extends": [

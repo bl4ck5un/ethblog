@@ -79,8 +79,8 @@ function App() {
           <>
             {!window.has_web3 && (
               <div className="alert alert-danger">
-                <strong>⚠️ No web3 wallet detected. Falling back to use a centralized proxy node.</strong><br />
-                To load posts directly from the blockchain, install a Web3-enabled wallet (e.g., MetaMask) and refresh the page.
+                <strong>⚠️ No web3 wallet detected. Reading blockchain via a centralized proxy node.</strong><br />
+                To load directly from the blockchain, install a Web3-enabled wallet (e.g., MetaMask) and refresh the page.
               </div>
             )}
             {postIndex === null ? <PostList /> : <PostView index={Number(postIndex)} />}

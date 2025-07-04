@@ -60,7 +60,6 @@ function PostView({ index }) {
                         inputPosition="button"
                         theme="light"
                         lang="en"
-                        loading="lazy"
                     />
                 </div>
             </div>

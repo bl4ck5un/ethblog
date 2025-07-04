@@ -22,7 +22,7 @@ function App() {
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div className="container">
           <a className="navbar-brand" href="/">Hacking Decentralized</a>
-          <span class="text-white">
+          <span className="text-white">
             {window.has_web3 ? "🟢" : "🔴"}
           </span>
           <div className="collapse navbar-collapse">
@@ -40,10 +40,39 @@ function App() {
 
       {/* Main Container */}
       <div className="container">
+        <div
+          className="p-4 mb-4 text-white rounded shadow-sm"
+          style={{
+            background: "linear-gradient(135deg, #6f42c1, #0d6efd)",
+          }}
+        >
+          <h2 className="mb-3">🚦Latest ideas and experiments from the frontier of decentralized tech</h2>
+          <p className="mb-2">
+            This blog lives <strong>on Ethereum</strong> at{' '}
+            <a
+              href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC"
+              target="_blank"
+              rel="noreferrer"
+              className="text-white text-decoration-underline"
+            >
+              0x410D91696Ee45da4BDdfaed06278038c7C1A84bC
+            </a>
+            , powered by{' '}
+            <a
+              href="https://github.com/pdaian/ethblog/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-white text-decoration-underline"
+            >
+              ethblog
+            </a>
+            .
+          </p>
+        </div>
         {ready ? (
           <>
             {!window.has_web3 && (
-              <div class="alert alert-danger">
+              <div className="alert alert-danger">
                 <strong>⚠️ You are currently viewing ethblog through a centralized proxy node.</strong><br />
                 To load this post from the blockchain, <a href="https://docs.alchemy.com/docs/how-to-install-a-web3-wallet">install a web3-enabled wallet</a> and refresh the page.
               </div>
@@ -55,9 +84,8 @@ function App() {
       <footer className="bg-dark text-white text-center py-3 mt-5">
         <div className="container">
           <p className="mb-0">
-            © {new Date().getFullYear()} ethblog — Built with ❤️ on Ethereum
+            © {new Date().getFullYear()} Hacking Decentralized
           </p>
-          <i class="subtext">This blog lives at <a href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC">0x410D91696Ee45da4BDdfaed06278038c7C1A84bC</a> on Ethereum, powered by <a href="https://github.com/pdaian/ethblog/">ethblog</a>.</i>
         </div>
       </footer>
     </>

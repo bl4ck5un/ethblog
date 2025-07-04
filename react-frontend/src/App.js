@@ -4,6 +4,7 @@ import PostList from "./PostList";
 import PostView from "./PostView";
 import { setup_web3 } from "./ethblog";
 import './App.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min';
 
 function App() {
   const [params] = useSearchParams();
@@ -25,13 +26,28 @@ function App() {
           <span className="text-white">
             {window.has_web3 ? "🟢" : "🔴"}
           </span>
-          <div className="collapse navbar-collapse">
+
+          {/* Toggler button */}
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+
+          {/* Collapsible section */}
+          <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
               <li className="nav-item">
                 <a className="nav-link" href="/">Posts</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#author">Author</a>
+                <a className="nav-link" href="#author">Authors</a>
               </li>
             </ul>
           </div>
@@ -48,25 +64,15 @@ function App() {
         >
           <h2 className="mb-3">🚦Latest ideas and experiments from the frontier of decentralized tech</h2>
           <p className="mb-2">
-            This blog lives <strong>on Ethereum</strong> at{' '}
-            <a
+            This blog lives <strong>on Ethereum</strong>.
+            Posts are fetched from contract at <a
               href="https://etherscan.io/address/0x410D91696Ee45da4BDdfaed06278038c7C1A84bC"
               target="_blank"
               rel="noreferrer"
               className="text-white text-decoration-underline"
             >
-              0x410D91696Ee45da4BDdfaed06278038c7C1A84bC
-            </a>
-            , powered by{' '}
-            <a
-              href="https://github.com/pdaian/ethblog/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-white text-decoration-underline"
-            >
-              ethblog
-            </a>
-            .
+              0x410D91....84bC
+            </a> by your browser.
           </p>
         </div>
         {ready ? (

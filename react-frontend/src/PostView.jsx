@@ -48,7 +48,7 @@ function PostView({ index }) {
                     <div className="post-content mt-4 p-4 border rounded shadow-sm bg-light" dangerouslySetInnerHTML={{ __html: post.content }} />
                 </div>
 
-                <div className='mt-2'>
+                <div className='mt-5'>
                     <Giscus
                         repo="bl4ck5un/ethblog"
                         repoId="R_kgDOPFS14w"

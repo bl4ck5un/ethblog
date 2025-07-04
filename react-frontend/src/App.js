@@ -79,8 +79,8 @@ function App() {
           <>
             {!window.has_web3 && (
               <div className="alert alert-danger">
-                <strong>⚠️ You are currently viewing ethblog through a centralized proxy node.</strong><br />
-                To load this post from the blockchain, <a href="https://docs.alchemy.com/docs/how-to-install-a-web3-wallet">install a web3-enabled wallet</a> and refresh the page.
+                <strong>⚠️ No web3 wallet detected. Falling back to use a centralized proxy node.</strong><br />
+                To load posts directly from the blockchain, install a Web3-enabled wallet (e.g., MetaMask) and refresh the page.
               </div>
             )}
             {postIndex === null ? <PostList /> : <PostView index={Number(postIndex)} />}
